@@ -74,8 +74,8 @@ document.addEventListener("DOMContentLoaded", () => {
       new Particle(
         Math.random() * X,
         Math.random() * Y,
-        (Math.random() * 2) - 1,
-        (Math.random() * 2) - 1,
+        Math.random() * 2 - 1,
+        Math.random() * 2 - 1,
       ),
     );
   }
@@ -95,26 +95,12 @@ document.addEventListener("DOMContentLoaded", () => {
       // Particle velocities update vector field
       const [pX, pY] = p.discrete();
       let field_at_p = field[pX][pY];
-      field_at_p[0] += (p.dx * PF_MULT);
-      field_at_p[1] += (p.dy * PF_MULT);
+      field_at_p[0] += p.dx * PF_MULT;
+      field_at_p[1] += p.dy * PF_MULT;
       // Vector field updates particles
-      p.dx += (field_at_p[0] * FP_MULT);
-      p.dy += (field_at_p[1] * FP_MULT);
-
+      p.dx += field_at_p[0] * FP_MULT;
+      p.dy += field_at_p[1] * FP_MULT;
     }
-    // for (let x = 0; x < X; x++) {
-    //   for (let y = 0; y < Y; y++) {
-    //     // TODO this smells bad
-    //     for (const p of particles) {
-    //       const [pX, pY] = p.discrete();
-    //       if (pX == x && pY == y) {
-    //         // Vector field updates particles
-    //         p.dx += field[x][y][0];
-    //         p.dy += field[x][y][1];
-    //       }
-    //     }
-    //   }
-    // }
     for (let x = 0; x < X; x++) {
       for (let y = 0; y < Y; y++) {
         let neighs = [
