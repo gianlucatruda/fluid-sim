@@ -1,10 +1,17 @@
 const Y = 500;
 const X = 800;
 const N_PARTICLES = 5000;
-const PV_MULT = 1.0;
-const VP_MULT = 1.0;
-const FRIC = 0.99;
+const PF_MULT = 0.1;
+const FP_MULT = 0.05;
+const FRIC_MULT = 0.99;
 const MAX_V = 10;
+
+function symClip(x, v) {
+  if (x < 0) {
+    return Math.max(x, -v);
+  }
+  return Math.min(x, v);
+}
 
 class Particle {
   constructor(x, y, dx, dy) {
@@ -21,8 +28,8 @@ class Particle {
     this.prevY = this.y;
     this.x = (this.x + this.dx + X) % X;
     this.y = (this.y + this.dy + Y) % Y;
-    this.dx = this.dx * FRIC;
-    this.dy = this.dy * FRIC;
+    this.dx = symClip(this.dx * FRIC_MULT, MAX_V);
+    this.dy = symClip(this.dy * FRIC_MULT, MAX_V);
   }
 
   discrete() {
@@ -88,11 +95,11 @@ document.addEventListener("DOMContentLoaded", () => {
       // Particle velocities update vector field
       const [pX, pY] = p.discrete();
       let field_at_p = field[pX][pY];
-      // field_at_p[0] += p.dx * PV_MULT;
-      // field_at_p[1] += p.dy * PV_MULT;
+      field_at_p[0] += (p.dx * PF_MULT);
+      field_at_p[1] += (p.dy * PF_MULT);
       // Vector field updates particles
-      p.dx += field_at_p[0] * VP_MULT;
-      p.dy += field_at_p[1] * VP_MULT;
+      p.dx += (field_at_p[0] * FP_MULT);
+      p.dy += (field_at_p[1] * FP_MULT);
 
     }
     // for (let x = 0; x < X; x++) {
