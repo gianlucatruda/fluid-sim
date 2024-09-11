@@ -1,39 +1,39 @@
+const Y = 500;
+const X = 800;
+const N_PARTICLES = 10;
+
 class Particle {
   constructor(x, y, vx, vy) {
-    this.x = x;  // x-coordinate
-    this.y = y;  // y-coordinate
-    this.dv = vx;  // velocity in x-direction
-    this.dx = vy;  // velocity in y-direction
-    this.prevx = x;
-    this.prevy = y;
+    this.x = x;
+    this.y = y;
+    this.vx = vx;
+    this.vy = vy;
+    this.prevX = x;
+    this.prevY = y;
   }
 
   move() {
-    this.prevx = this.x;
-    this.prevy = this.y;
-    this.x += this.dx;
-    this.y += this.dy;
+    this.prevX = this.x;
+    this.prevY = this.y;
+    this.x += this.vx;
+    this.y += this.vy;
   }
 }
 
-function drawMotion(x1, y1, x2, y2, ctx) {
-  // TODO colour by velocity
-  ctx.beginPath();       // Start a new path for drawing
-  ctx.moveTo(x1, y1);    // Move the pen to the starting point
-  ctx.lineTo(x2, y2);    // Draw a straight line to the ending point
-  ctx.strokeStyle = 'blue'; // Define the color of the line
-  ctx.lineWidth = 1;     // Define the thickness of the line
-  ctx.stroke();          // Execute the drawing of the line
+function drawMotion(x1, y1, x2, y2, ctx, velocity) {
+  const speed = Math.sqrt(velocity[0] ** 2 + velocity[1] ** 2);
+  const color = `hsl(${Math.min(speed * 10, 360)}, 100%, 50%)`; // Hue based on speed
+  ctx.beginPath();
+  ctx.moveTo(x1, y1);
+  ctx.lineTo(x2, y2);
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 1;
+  ctx.stroke();
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  const Y = 500;
-  const X = 800;
-
   const canvas = document.getElementById("myCanvas");
   const ctx = canvas.getContext("2d");
-
-  // Setting the canvas size
   canvas.width = X;
   canvas.height = Y;
 
@@ -47,24 +47,20 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // Particle sim set up --------------------
-  // Particle array
-  const N_PARTICLES = 30;
   let particles = [];
   for (let i = 0; i < N_PARTICLES; i++) {
-    particles.push(new Particle(50, 50, 0, 0));
+    particles.push(new Particle(50, 50, Math.random() * 4 - 2, Math.random() * 4 - 2));
   }
   console.log({ particles });
   // Make velocity vector field (2D array of (x, y) vectors)
   let field = Array.from({ length: Y }, () => Array.from({ length: X }, () => [1, 1]));
   console.log({ field });
 
-  // Main fluid sim loop ---------------------
-  while (true) {
+  function simulate() {
     for (const p of particles) {
       // Particle velocities update vector field
       let field_at_p = field[p.x][p.y];
-      console.log({field_at_p});
+      // console.log({ field_at_p });
       field_at_p[0] += p.dx;
       field_at_p[1] += p.dy;
     }
@@ -80,16 +76,13 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       }
     }
-    // TODO Propagate velocity through velocity field (each grid square take saverage vectors of its neighbours)
-
-
-    // Visualisation --------------------------
-    for (const p of particles) {
+    ctx.clearRect(0, 0, X, Y);
+    particles.forEach(p => {
       p.move();
-      drawMotion(p.prevx, p.prevy, p.x, p.y, ctx);
-    }
-
+      drawMotion(p.prevX, p.prevY, p.x, p.y, ctx, [p.vx, p.vy]);
+    });
+    requestAnimationFrame(simulate);
   }
 
-
+  simulate();
 });
