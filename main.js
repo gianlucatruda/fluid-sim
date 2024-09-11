@@ -2,9 +2,10 @@ const Y = 500;
 const X = 800;
 const N_PARTICLES = 5000;
 const PF_MULT = 0.1;
-const FP_MULT = 0.05;
-const FRIC_MULT = 0.99;
-const MAX_V = 10;
+const FP_MULT = 0.4;
+const FRIC_MULT = 0.95;
+const DRAG = 0.3;
+const MAX_V = 20;
 
 function symClip(x, v) {
   if (x < 0) {
@@ -28,8 +29,10 @@ class Particle {
     this.prevY = this.y;
     this.x = (this.x + this.dx + X) % X;
     this.y = (this.y + this.dy + Y) % Y;
-    this.dx = symClip(this.dx * FRIC_MULT, MAX_V);
-    this.dy = symClip(this.dy * FRIC_MULT, MAX_V);
+    let signX = this.dx >= 0 ? 1.0 : -1.0;
+    let signY = this.dy >= 0 ? 1.0 : -1.0;
+    this.dx = symClip(this.dx * FRIC_MULT - signX * DRAG * this.dx ** 2, MAX_V);
+    this.dy = symClip(this.dy * FRIC_MULT - signY * DRAG * this.dy ** 2, MAX_V);
   }
 
   discrete() {
