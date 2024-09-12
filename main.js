@@ -1,17 +1,20 @@
+// Application
 const Y = 500;
 const X = 800;
+
+// Environment
 const N_PARTICLES = 5000;
 const PF_MULT = 0.05;
 const FP_MULT = 0.5;
-const FRIC_MULT = 0.95;
-const DRAG = 0.1;
 const DIFF_MULT = 0.997;
-const MAX_V = 5;
-const TURB_MULT = 0.1;
 const LAG = 0.5;
 const DAMP = 0.99;
 const WIND_X = 0.1;
 const WIND_Y = -0.05;
+
+// Sail
+const SAIL_P1_X = 1.0;
+const SAIL_P1_Y = 1.0;
 
 function symClip(x, v) {
   if (x < 0) {
@@ -28,6 +31,10 @@ class Particle {
     this.dy = dy;
     this.prevX = x;
     this.prevY = y;
+    this.TURB = 0.1;
+    this.FRIC = 0.95;
+    this.DRAG = 0.1;
+    this.MAX_V = 5;
   }
 
   move() {
@@ -35,10 +42,10 @@ class Particle {
     this.prevY = this.y;
     let signX = this.dx >= 0 ? 1.0 : -1.0;
     let signY = this.dy >= 0 ? 1.0 : -1.0;
-    this.dx += (Math.random() - 0.5) * 2 * TURB_MULT;
-    this.dy += (Math.random() - 0.5) * 2 * TURB_MULT;
-    this.dx = symClip(this.dx * FRIC_MULT - signX * DRAG * this.dx ** 2, MAX_V);
-    this.dy = symClip(this.dy * FRIC_MULT - signY * DRAG * this.dy ** 2, MAX_V);
+    this.dx += (Math.random() - 0.5) * 2 * this.TURB;
+    this.dy += (Math.random() - 0.5) * 2 * this.TURB;
+    this.dx = symClip(this.dx * this.FRIC - signX * this.DRAG * this.dx ** 2, this.MAX_V);
+    this.dy = symClip(this.dy * this.FRIC - signY * this.DRAG * this.dy ** 2, this.MAX_V);
     this.x = (this.x + this.dx + X) % X;
     this.y = (this.y + this.dy + Y) % Y;
   }
@@ -47,6 +54,19 @@ class Particle {
     let pX = (Math.round(this.x) + X) % X;
     let pY = (Math.round(this.y) + Y) % Y;
     return [pX, pY];
+  }
+}
+
+class Wing extends Particle {
+  constructor(x, y, l) {
+    super(x, y, 0, 0); // This must come first before using 'this'
+    this.length = l;
+
+    // Override params
+    this.TURB = 0.01;
+    this.FRIC = 0.999;
+    this.DRAG = 0.02;
+    this.MAX_V = 10;
   }
 }
 
@@ -62,6 +82,28 @@ function drawMotion(x1, y1, x2, y2, ctx) {
   ctx.strokeStyle = color;
   ctx.lineWidth = 2;
   ctx.stroke();
+}
+
+function drawSail(sail, ctx) {
+  // Defining the rectangle dimensions based on the sail's properties
+  // const halfLength = sail.length / 2; // half the length to center the rectangle
+  // const x = sail.x - halfLength; // Top-left corner x coordinate
+  // const y = sail.y - halfLength; // Top-left corner y coordinate
+  // const height = sail.length; // Height of the rectangle
+  //
+  // // Sail
+  // ctx.beginPath();
+  // ctx.rect(x, y, 5, height);
+  // ctx.fillStyle = 'white'; // Set the fill color to white (or any other color)
+  // ctx.fill();
+  // ctx.strokeStyle = 'green'; // Edge color
+  // ctx.stroke();
+
+  // Centre of sail physics
+  ctx.fillStyle = "green";
+  ctx.beginPath();
+  ctx.arc(sail.x, sail.y, 4, 0, Math.PI * 2, true);
+  ctx.fill();
 }
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -94,8 +136,11 @@ document.addEventListener("DOMContentLoaded", () => {
   );
 
   console.log({ field });
-  let fcount = 0;
 
+  let sail = new Wing(200, 400, 30);
+
+
+  let fcount = 0;
   function simulate() {
     let tStart = performance.now();
     for (const p of particles) {
@@ -146,6 +191,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Clear the canvas for a re-render
     ctx.clearRect(0, 0, X, Y);
+
+    // Draw the sail
+    console.log(sail);
+    const [sX, sY] = sail.discrete();
+    sail.dx += field[sX][sY][0] * SAIL_P1_X;
+    sail.dy += field[sX][sY][1] * SAIL_P1_Y;
+    sail.move();
+    drawSail(sail, ctx);
 
     // Move and draw each particle
     particles.forEach((p) => {
