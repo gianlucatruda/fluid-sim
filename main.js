@@ -1,6 +1,6 @@
 // Application
-const Y = 500;
-const X = 800;
+const X = 600;
+const Y = 600;
 
 // Environment
 const N_PARTICLES = 5000;
@@ -31,7 +31,7 @@ class Particle {
     this.dy = dy;
     this.prevX = x;
     this.prevY = y;
-    this.TURB = 0.1;
+    this.TURB = 0.15;
     this.FRIC = 0.95;
     this.DRAG = 0.1;
     this.MAX_V = 5;
@@ -193,7 +193,7 @@ document.addEventListener("DOMContentLoaded", () => {
     ctx.clearRect(0, 0, X, Y);
 
     // Draw the sail
-    console.log(sail);
+    // console.log(sail);
     const [sX, sY] = sail.discrete();
     sail.dx += field[sX][sY][0] * SAIL_P1_X;
     sail.dy += field[sX][sY][1] * SAIL_P1_Y;
@@ -207,8 +207,8 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     // Draw some markers
-    for (let x = 0; x < X; x += 30) {
-      for (let y = 0; y < Y; y += 30) {
+    for (let x = 0; x < X; x += 50) {
+      for (let y = 0; y < Y; y += 50) {
         ctx.fillStyle = "gray";
         ctx.beginPath();
         ctx.arc(x, y, 0.75, 0, Math.PI * 2, true);
@@ -216,8 +216,8 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
-    for (let x = 0; x < X; x += 30) {
-      for (let y = 0; y < Y; y += 30) {
+    for (let x = 0; x < X; x += 50) {
+      for (let y = 0; y < Y; y += 50) {
         field[x][y];
         // const color = `hsl(${Math.min(360 - Math.floor(speed) * 50, 360)}, 100%, 50%)`;
         const color = "blue";
