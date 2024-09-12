@@ -8,6 +8,10 @@ const DRAG = 0.1;
 const DIFF_MULT = 0.997;
 const MAX_V = 5;
 const TURB_MULT = 0.1;
+const LAG = 0.5;
+const DAMP = 0.99;
+const WIND_X = 0.1;
+const WIND_Y = -0.05;
 
 function symClip(x, v) {
   if (x < 0) {
@@ -66,7 +70,6 @@ document.addEventListener("DOMContentLoaded", () => {
   canvas.width = X;
   canvas.height = Y;
 
-
   let particles = [];
   for (let i = 0; i < N_PARTICLES; i++) {
     particles.push(
@@ -74,8 +77,8 @@ document.addEventListener("DOMContentLoaded", () => {
         Math.random() * X,
         Math.random() * Y,
         // 0, 0,
-        Math.random() * 2 - 1,
-        Math.random() * 2 - 1,
+        Math.random() * 10 - 5,
+        Math.random() * 10 - 5,
       ),
     );
   }
@@ -83,8 +86,10 @@ document.addEventListener("DOMContentLoaded", () => {
   // Make velocity vector field (2D array of (x, y) vectors)
   let field = Array.from({ length: X }, () =>
     Array.from({ length: Y }, () => [
-      (Math.random() - 0.5) * 1.0 + 0.02,
-      (Math.random() - 0.5) * 1.0 - 0.005,
+      (Math.random() - 0.5) * 1.0 + WIND_X, // x component
+      (Math.random() - 0.5) * 1.0 + WIND_Y, // y component
+      0, // Next x component
+      0, // Next y component
     ]),
   );
 
@@ -103,6 +108,7 @@ document.addEventListener("DOMContentLoaded", () => {
       p.dx += field_at_p[0] * FP_MULT;
       p.dy += field_at_p[1] * FP_MULT;
     }
+
     for (let x = 0; x < X; x++) {
       for (let y = 0; y < Y; y++) {
         let neighs = [
@@ -123,7 +129,18 @@ document.addEventListener("DOMContentLoaded", () => {
           nsumX += field[nX][nY][0] * DIFF_MULT;
           nsumY += field[nX][nY][1] * DIFF_MULT;
         }
-        field[x][y] = [nsumX / neighs.length, nsumY / neighs.length];
+        // Update the future field values based on neighbours
+        field[x][y][2] = nsumX / neighs.length;
+        field[x][y][3] = nsumY / neighs.length;
+      }
+    }
+
+    for (let x = 0; x < X; x++) {
+      for (let y = 0; y < Y; y++) {
+        field[x][y][0] =
+          (field[x][y][0] * LAG + field[x][y][2] * (1 - LAG)) * DAMP;
+        field[x][y][1] =
+          (field[x][y][1] * LAG + field[x][y][3] * (1 - LAG)) * DAMP;
       }
     }
 
@@ -148,12 +165,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
     for (let x = 0; x < X; x += 30) {
       for (let y = 0; y < Y; y += 30) {
-        field[x][y]
+        field[x][y];
         // const color = `hsl(${Math.min(360 - Math.floor(speed) * 50, 360)}, 100%, 50%)`;
         const color = "blue";
         ctx.beginPath();
         ctx.moveTo(x, y);
-        ctx.lineTo(Math.round(x + field[x][y][0] * 1000), Math.round(y + field[x][y][1] * 1000));
+        ctx.lineTo(
+          Math.round(x + field[x][y][0] * 1000),
+          Math.round(y + field[x][y][1] * 1000),
+        );
         ctx.strokeStyle = color;
         ctx.lineWidth = 1;
         ctx.stroke();
@@ -164,7 +184,9 @@ document.addEventListener("DOMContentLoaded", () => {
     let fps = 1 / (tDelta / 1000);
     fcount++;
     if (fcount % 30 == 0) {
-      console.log(`Rendered in ${(tDelta).toFixed(1)}ms (${fps.toFixed(0)}fps) | ${fcount}`);
+      console.log(
+        `Rendered in ${tDelta.toFixed(1)}ms (${fps.toFixed(0)}fps) | ${fcount}`,
+      );
       console.log(particles[0]);
     }
 
