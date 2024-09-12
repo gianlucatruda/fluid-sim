@@ -44,8 +44,14 @@ class Particle {
     let signY = this.dy >= 0 ? 1.0 : -1.0;
     this.dx += (Math.random() - 0.5) * 2 * this.TURB;
     this.dy += (Math.random() - 0.5) * 2 * this.TURB;
-    this.dx = symClip(this.dx * this.FRIC - signX * this.DRAG * this.dx ** 2, this.MAX_V);
-    this.dy = symClip(this.dy * this.FRIC - signY * this.DRAG * this.dy ** 2, this.MAX_V);
+    this.dx = symClip(
+      this.dx * this.FRIC - signX * this.DRAG * this.dx ** 2,
+      this.MAX_V,
+    );
+    this.dy = symClip(
+      this.dy * this.FRIC - signY * this.DRAG * this.dy ** 2,
+      this.MAX_V,
+    );
     this.x = (this.x + this.dx + X) % X;
     this.y = (this.y + this.dy + Y) % Y;
   }
@@ -138,7 +144,6 @@ document.addEventListener("DOMContentLoaded", () => {
   console.log({ field });
 
   let sail = new Wing(200, 400, 30);
-
 
   let fcount = 0;
   function simulate() {
