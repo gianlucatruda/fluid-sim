@@ -1,11 +1,11 @@
 const Y = 500;
 const X = 800;
-const N_PARTICLES = 5000;
-const PF_MULT = 0.1;
-const FP_MULT = 0.4;
-const FRIC_MULT = 0.95;
-const DRAG = 0.3;
-const MAX_V = 20;
+const N_PARTICLES = 2000;
+const PF_MULT = 0.01;
+const FP_MULT = 0.8;
+const FRIC_MULT = 0.999;
+const DRAG = 0.1;
+const MAX_V = 30;
 
 function symClip(x, v) {
   if (x < 0) {
@@ -36,8 +36,8 @@ class Particle {
   }
 
   discrete() {
-    let pX = Math.floor((this.x + X) % X);
-    let pY = Math.floor((this.y + Y) % Y);
+    let pX = (Math.round(this.x) + X) % X;
+    let pY = (Math.round(this.y) + Y) % Y;
     return [pX, pY];
   }
 }
@@ -62,14 +62,6 @@ document.addEventListener("DOMContentLoaded", () => {
   canvas.width = X;
   canvas.height = Y;
 
-  // Draw some markers
-  for (let x = 0; x < X; x += 30) {
-    for (let y = 0; y < Y; y += 30) {
-      ctx.beginPath();
-      ctx.arc(x, y, 0.75, 0, Math.PI * 2, true);
-      ctx.fill();
-    }
-  }
 
   let particles = [];
   for (let i = 0; i < N_PARTICLES; i++) {
@@ -77,8 +69,9 @@ document.addEventListener("DOMContentLoaded", () => {
       new Particle(
         Math.random() * X,
         Math.random() * Y,
-        Math.random() * 2 - 1,
-        Math.random() * 2 - 1,
+        0, 0,
+        // Math.random() * 2 - 1,
+        // Math.random() * 2 - 1,
       ),
     );
   }
@@ -86,8 +79,8 @@ document.addEventListener("DOMContentLoaded", () => {
   // Make velocity vector field (2D array of (x, y) vectors)
   let field = Array.from({ length: X }, () =>
     Array.from({ length: Y }, () => [
-      (Math.random() - 0.5) * 1.0,
-      (Math.random() - 0.5) * 1.0,
+      (Math.random() - 0.5) * 1.0 + 0.01,
+      (Math.random() - 0.5) * 1.0 - 0.002,
     ]),
   );
 
@@ -128,19 +121,42 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
+    // Clear the canvas for a re-render
     ctx.clearRect(0, 0, X, Y);
 
+    // Move and draw each particle
     particles.forEach((p) => {
       p.move();
       drawMotion(p.prevX, p.prevY, p.x, p.y, ctx);
     });
+
+    // Draw some markers
+    for (let x = 0; x < X; x += 30) {
+      for (let y = 0; y < Y; y += 30) {
+        ctx.fillStyle = "gray";
+        ctx.beginPath();
+        ctx.arc(x, y, 0.75, 0, Math.PI * 2, true);
+        ctx.fill();
+      }
+    }
+
+    for (let x = 0; x < X; x+=30) {
+      for (let y = 0; y < Y; y+=30) {
+        field[x][y]
+        // const color = `hsl(${Math.min(360 - Math.floor(speed) * 50, 360)}, 100%, 50%)`;
+        const color = "blue";
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+        ctx.lineTo(Math.round(x + field[x][y][0] * 1000), Math.round(y + field[x][y][1] * 1000));
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 1;
+        ctx.stroke();
+      }
+    }
 
     console.log(particles[0]);
     requestAnimationFrame(simulate);
   }
 
   simulate();
-  // for (let i = 0; i < 10; i++) {
-  //
-  // }
 });
