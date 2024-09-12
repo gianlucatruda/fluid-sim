@@ -1,11 +1,13 @@
 const Y = 500;
 const X = 800;
-const N_PARTICLES = 2000;
-const PF_MULT = 0.01;
-const FP_MULT = 0.8;
-const FRIC_MULT = 0.999;
+const N_PARTICLES = 5000;
+const PF_MULT = 0.05;
+const FP_MULT = 0.5;
+const FRIC_MULT = 0.95;
 const DRAG = 0.1;
-const MAX_V = 30;
+const DIFF_MULT = 0.997;
+const MAX_V = 5;
+const TURB_MULT = 0.1;
 
 function symClip(x, v) {
   if (x < 0) {
@@ -27,12 +29,14 @@ class Particle {
   move() {
     this.prevX = this.x;
     this.prevY = this.y;
-    this.x = (this.x + this.dx + X) % X;
-    this.y = (this.y + this.dy + Y) % Y;
     let signX = this.dx >= 0 ? 1.0 : -1.0;
     let signY = this.dy >= 0 ? 1.0 : -1.0;
+    this.dx += (Math.random() - 0.5) * 2 * TURB_MULT;
+    this.dy += (Math.random() - 0.5) * 2 * TURB_MULT;
     this.dx = symClip(this.dx * FRIC_MULT - signX * DRAG * this.dx ** 2, MAX_V);
     this.dy = symClip(this.dy * FRIC_MULT - signY * DRAG * this.dy ** 2, MAX_V);
+    this.x = (this.x + this.dx + X) % X;
+    this.y = (this.y + this.dy + Y) % Y;
   }
 
   discrete() {
@@ -69,9 +73,9 @@ document.addEventListener("DOMContentLoaded", () => {
       new Particle(
         Math.random() * X,
         Math.random() * Y,
-        0, 0,
-        // Math.random() * 2 - 1,
-        // Math.random() * 2 - 1,
+        // 0, 0,
+        Math.random() * 2 - 1,
+        Math.random() * 2 - 1,
       ),
     );
   }
@@ -79,14 +83,16 @@ document.addEventListener("DOMContentLoaded", () => {
   // Make velocity vector field (2D array of (x, y) vectors)
   let field = Array.from({ length: X }, () =>
     Array.from({ length: Y }, () => [
-      (Math.random() - 0.5) * 1.0 + 0.01,
-      (Math.random() - 0.5) * 1.0 - 0.002,
+      (Math.random() - 0.5) * 1.0 + 0.02,
+      (Math.random() - 0.5) * 1.0 - 0.005,
     ]),
   );
 
   console.log({ field });
+  let fcount = 0;
 
   function simulate() {
+    let tStart = performance.now();
     for (const p of particles) {
       // Particle velocities update vector field
       const [pX, pY] = p.discrete();
@@ -114,8 +120,8 @@ document.addEventListener("DOMContentLoaded", () => {
           let [nX, nY] = n;
           nX = (nX + X) % X;
           nY = (nY + Y) % Y;
-          nsumX += field[nX][nY][0];
-          nsumY += field[nX][nY][1];
+          nsumX += field[nX][nY][0] * DIFF_MULT;
+          nsumY += field[nX][nY][1] * DIFF_MULT;
         }
         field[x][y] = [nsumX / neighs.length, nsumY / neighs.length];
       }
@@ -140,8 +146,8 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
-    for (let x = 0; x < X; x+=30) {
-      for (let y = 0; y < Y; y+=30) {
+    for (let x = 0; x < X; x += 30) {
+      for (let y = 0; y < Y; y += 30) {
         field[x][y]
         // const color = `hsl(${Math.min(360 - Math.floor(speed) * 50, 360)}, 100%, 50%)`;
         const color = "blue";
@@ -154,7 +160,14 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
-    console.log(particles[0]);
+    let tDelta = performance.now() - tStart;
+    let fps = 1 / (tDelta / 1000);
+    fcount++;
+    if (fcount % 30 == 0) {
+      console.log(`Rendered in ${(tDelta).toFixed(1)}ms (${fps.toFixed(0)}fps) | ${fcount}`);
+      console.log(particles[0]);
+    }
+
     requestAnimationFrame(simulate);
   }
 
