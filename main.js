@@ -1,6 +1,9 @@
 // Application
-const X = 600;
-const Y = 600;
+let winX = window.innerWidth - 20;
+let winY = window.innerHeight - 100;
+console.log(winX, winY);
+const X = Math.min(winX, 800);
+const Y = Math.min(winY, 600);
 
 // Environment
 const N_PARTICLES = 10000;

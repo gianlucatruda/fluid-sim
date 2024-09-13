@@ -7,12 +7,25 @@
     <title>Fluid-Sim Sailor</title>
     <style>
         body {
-            margin: 10px;
             background-color: #121212;
-            /* Dark background */
             color: #ffffff;
-            /* Dark text */
             font-family: helvetica;
+            overflow: hidden;
+        }
+
+        div {
+            justify-content: center;
+            align-items: center;
+            margin: 1rem auto;
+            padding: 1rem auto;
+            display: flex;
+        }
+
+        #gameView {}
+
+        #controls {
+            < !-- border: 1px solid green;
+            -->
         }
 
         canvas {
@@ -23,8 +36,12 @@
 </head>
 
 <body>
-    <canvas id="myCanvas"></canvas>
-    <input id="chk-vec" type="checkbox">Show vector field</input>
+    <div id="gameView">
+        <canvas id="myCanvas"></canvas>
+    </div>
+    <div id="controls">
+        <input id="chk-vec" type="checkbox">Show vector field</input>
+    </div>
     <script src="main.js" type="module"></script>
 </body>
 
