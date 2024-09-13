@@ -8,8 +8,8 @@ const PF_MULT = 0.05;
 const FP_MULT = 0.5;
 const DIFF_MULT = 0.997;
 const LAG = 0.5;
-const DAMP = 0.99;
-const WIND_X = 0.1;
+const DAMP = 0.98;
+const WIND_X = 0.08;
 const WIND_Y = -0.05;
 
 // Sail
@@ -91,24 +91,11 @@ function drawMotion(x1, y1, x2, y2, ctx) {
 }
 
 function drawSail(sail, ctx) {
-  // Defining the rectangle dimensions based on the sail's properties
-  // const halfLength = sail.length / 2; // half the length to center the rectangle
-  // const x = sail.x - halfLength; // Top-left corner x coordinate
-  // const y = sail.y - halfLength; // Top-left corner y coordinate
-  // const height = sail.length; // Height of the rectangle
-  //
-  // // Sail
-  // ctx.beginPath();
-  // ctx.rect(x, y, 5, height);
-  // ctx.fillStyle = 'white'; // Set the fill color to white (or any other color)
-  // ctx.fill();
-  // ctx.strokeStyle = 'green'; // Edge color
-  // ctx.stroke();
+  ctx.font = '30px Arial';
+  ctx.fillStyle = 'blue'; // Fill color
+  ctx.textAlign = 'center';
 
-  // Centre of sail physics
-  ctx.fillStyle = "green";
-  ctx.beginPath();
-  ctx.arc(sail.x, sail.y, 4, 0, Math.PI * 2, true);
+  ctx.fillText("⛵️", sail.x, sail.y);
   ctx.fill();
 }
 
@@ -197,26 +184,12 @@ document.addEventListener("DOMContentLoaded", () => {
     // Clear the canvas for a re-render
     ctx.clearRect(0, 0, X, Y);
 
-    // Draw the sail
-    // console.log(sail);
-    const [sX, sY] = sail.discrete();
-    sail.dx += field[sX][sY][0] * SAIL_P1_X;
-    sail.dy += field[sX][sY][1] * SAIL_P1_Y;
-    sail.move();
-    drawSail(sail, ctx);
-
-    // Move and draw each particle
-    particles.forEach((p) => {
-      p.move();
-      drawMotion(p.prevX, p.prevY, p.x, p.y, ctx);
-    });
-
     // Draw some markers
     for (let x = 0; x < X; x += 50) {
       for (let y = 0; y < Y; y += 50) {
-        ctx.fillStyle = "gray";
+        ctx.fillStyle = 'rgba(200, 200, 200, 0.1)';
         ctx.beginPath();
-        ctx.arc(x, y, 0.75, 0, Math.PI * 2, true);
+        ctx.arc(x, y, 2, 0, Math.PI * 2, true);
         ctx.fill();
       }
     }
@@ -224,19 +197,32 @@ document.addEventListener("DOMContentLoaded", () => {
     for (let x = 0; x < X; x += 50) {
       for (let y = 0; y < Y; y += 50) {
         field[x][y];
-        // const color = `hsl(${Math.min(360 - Math.floor(speed) * 50, 360)}, 100%, 50%)`;
-        const color = "blue";
         ctx.beginPath();
         ctx.moveTo(x, y);
         ctx.lineTo(
           Math.round(x + field[x][y][0] * 1000),
           Math.round(y + field[x][y][1] * 1000),
         );
-        ctx.strokeStyle = color;
+        ctx.strokeStyle = 'rgba(200, 200, 200, 0.2)';
+        ctx.opacity = "0.25";
         ctx.lineWidth = 1;
         ctx.stroke();
       }
     }
+
+    // Move and draw each particle
+    particles.forEach((p) => {
+      p.move();
+      drawMotion(p.prevX, p.prevY, p.x, p.y, ctx);
+    });
+
+    // Draw the sail
+    // console.log(sail);
+    const [sX, sY] = sail.discrete();
+    sail.dx += field[sX][sY][0] * SAIL_P1_X;
+    sail.dy += field[sX][sY][1] * SAIL_P1_Y;
+    sail.move();
+    drawSail(sail, ctx);
 
     let tDelta = performance.now() - tStart;
     let fps = 1 / (tDelta / 1000);
