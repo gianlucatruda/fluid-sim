@@ -3,14 +3,14 @@ const X = 600;
 const Y = 600;
 
 // Environment
-const N_PARTICLES = 5000;
+const N_PARTICLES = 10000;
 const PF_MULT = 0.05;
 const FP_MULT = 0.5;
 const DIFF_MULT = 0.997;
 const LAG = 0.5;
-const DAMP = 0.98;
-const WIND_X = 0.08;
-const WIND_Y = -0.05;
+const DAMP = 0.999;
+const WIND_X = 0.02;
+const WIND_Y = -0.01;
 
 // Sail
 const SAIL_P1_X = 1.0;
@@ -31,10 +31,10 @@ class Particle {
     this.dy = dy;
     this.prevX = x;
     this.prevY = y;
-    this.TURB = 0.15;
+    this.TURB = 0.20;
     this.FRIC = 0.95;
-    this.DRAG = 0.1;
-    this.MAX_V = 5;
+    this.DRAG = 0.3;
+    this.MAX_V = 3;
   }
 
   move() {
@@ -69,10 +69,10 @@ class Wing extends Particle {
     this.length = l;
 
     // Override params
-    this.TURB = 0.01;
-    this.FRIC = 0.999;
+    this.TURB = 0.001;
+    this.FRIC = 0.99;
     this.DRAG = 0.02;
-    this.MAX_V = 10;
+    this.MAX_V = 7;
   }
 }
 
@@ -81,7 +81,8 @@ function drawMotion(x1, y1, x2, y2, ctx) {
   if (speed > 500) {
     return;
   }
-  const color = `hsl(${Math.min(360 - Math.floor(speed) * 50, 360)}, 100%, 50%)`;
+  // const color = `hsl(${Math.min(360 - Math.floor(speed) * 50, 360)}, 100%, 60%)`;
+  const color = `rgba(10, ${Math.min(speed * 400, 255)}, 200, 0.9)`;
   ctx.beginPath();
   ctx.moveTo(x1, y1);
   ctx.lineTo(x2, y2);
@@ -99,11 +100,19 @@ function drawSail(sail, ctx) {
   ctx.fill();
 }
 
+
 document.addEventListener("DOMContentLoaded", () => {
   const canvas = document.getElementById("myCanvas");
   const ctx = canvas.getContext("2d");
   canvas.width = X;
   canvas.height = Y;
+
+  const checkbox = document.getElementById('chk-vec');
+  let showVectors = checkbox.checked; // Initial state of the checkbox
+
+  checkbox.addEventListener('change', () => {
+    showVectors = checkbox.checked; // Update whether to show vectors
+  });
 
   let particles = [];
   for (let i = 0; i < N_PARTICLES; i++) {
@@ -184,29 +193,29 @@ document.addEventListener("DOMContentLoaded", () => {
     // Clear the canvas for a re-render
     ctx.clearRect(0, 0, X, Y);
 
-    // Draw some markers
-    for (let x = 0; x < X; x += 50) {
-      for (let y = 0; y < Y; y += 50) {
-        ctx.fillStyle = 'rgba(200, 200, 200, 0.1)';
-        ctx.beginPath();
-        ctx.arc(x, y, 2, 0, Math.PI * 2, true);
-        ctx.fill();
+    if (showVectors) {
+      // Draw some markers
+      for (let x = 0; x < X; x += 50) {
+        for (let y = 0; y < Y; y += 50) {
+          ctx.fillStyle = 'rgba(200, 200, 200, 0.5)';
+          ctx.beginPath();
+          ctx.arc(x, y, 1.5, 0, Math.PI * 2, true);
+          ctx.fill();
+        }
       }
-    }
-
-    for (let x = 0; x < X; x += 50) {
-      for (let y = 0; y < Y; y += 50) {
-        field[x][y];
-        ctx.beginPath();
-        ctx.moveTo(x, y);
-        ctx.lineTo(
-          Math.round(x + field[x][y][0] * 1000),
-          Math.round(y + field[x][y][1] * 1000),
-        );
-        ctx.strokeStyle = 'rgba(200, 200, 200, 0.2)';
-        ctx.opacity = "0.25";
-        ctx.lineWidth = 1;
-        ctx.stroke();
+      for (let x = 0; x < X; x += 50) {
+        for (let y = 0; y < Y; y += 50) {
+          field[x][y];
+          ctx.beginPath();
+          ctx.moveTo(x, y);
+          ctx.lineTo(
+            Math.round(x + field[x][y][0] * 1000),
+            Math.round(y + field[x][y][1] * 1000),
+          );
+          ctx.strokeStyle = 'rgba(200, 200, 200, 0.2)';
+          ctx.lineWidth = 1;
+          ctx.stroke();
+        }
       }
     }
 
