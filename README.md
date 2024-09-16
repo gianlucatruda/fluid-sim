@@ -8,7 +8,7 @@ Try it out at [fluid-sim-sailor.vercel.app](https://fluid-sim-sailor.vercel.app)
 
 ---
 
-The prompt for Wednesday's creative coding session was an excerpt from Italo Calvino's _Invisible Cities_ that contained the following section:
+The prompt for [Wednesday's creative coding session](https://gianluca.ai/rc-weeknotes-05) was an excerpt from Italo Calvino's _Invisible Cities_ that contained the following section:
 
 > ...the white and red wind-socks flapping, the chimneys belching smoke, he thinks of a ship; he knows it is a city, but he thinks of it as a vessel that will take him away from the desert, a windjammer about to cast off, with the breeze already swelling the sails, not yet unfurled...
 
